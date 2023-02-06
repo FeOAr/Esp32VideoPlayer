@@ -203,7 +203,7 @@ void TaskUncode_T3(void *pvParameters) {  //处理线程
   unsigned char *testHexArray = (unsigned char *)malloc(sizeof(unsigned char) * bitStingSize);
   long int threadFrameID = 0;
   for (;;) {
-    /*-----------解码 线程_1----------*/
+    /*-----------解码 线程_3----------*/
     cStrImg = "";
     unCStrImg = "";
     if (!nextPause) {

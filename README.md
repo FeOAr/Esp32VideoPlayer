@@ -16,10 +16,18 @@ P.S. 由于软件不完善，不建议软件开启一次，处理多次视频，
 ![](https://imgforfeoar-1312132618.cos.ap-shanghai.myqcloud.com/markdown/202302062027414.png)
 
 # 三，下位机相关
+## 1. 固件
+
 可用 Arduino IDE 2.0 打开“. ino”文件，编译上传。**由于下位机的代码也是在 ubuntu 下开发**，可能会有编码问题。
 
 注意：上传前，修改端口，IP，你的 wifi 名字和密码。
 ![](https://imgforfeoar-1312132618.cos.ap-shanghai.myqcloud.com/markdown/202302062032989.png)
+
+
+
+## 2. 硬件
+
+（待补充。。。）
 
 # 四，Q&A
 1. 板子连上 Ubuntu 后认不到

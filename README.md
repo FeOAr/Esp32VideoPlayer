@@ -1,4 +1,3 @@
-
 # 一，开发环境
 
 ## 1. 系统
@@ -8,14 +7,19 @@ Ubuntu 22.04.1 LTS
 
 <img src="https://imgforfeoar-1312132618.cos.ap-shanghai.myqcloud.com/markdown/202302062001654.png" style="zoom:80%;" />
 
-# 二，上位机相关
+# 二，总体逻辑
+
+![结构拓扑.drawio](https://imgforfeoar-1312132618.cos.ap-shanghai.myqcloud.com/markdown/202302112246867.png)
+
+# 三，上位机相关
+
 1. 用 QT Creator 添加“Esp32VideoPlayer/Player/videoforesp32/”目录下的“. Pro”文件，或是直接下载 release 版本，直接运行下图文件，可能会有 QT 框架的安装依赖。
 
     ![](https://imgforfeoar-1312132618.cos.ap-shanghai.myqcloud.com/markdown/202302062011149.png)
 
 2. 上位机软件使用方法
-  先选择一个视频文件，根据视频的特点选择要不要反色以获得更好的显示效果。然后点击处理视频，会在当前目录下生成一个 cache 文件夹，存放临时文件。然后随便设置一个端口，小于 65535 就行，点击开启监听。esp32 连上后会有提示。收到“hello world”后就可以发送了。
-  P.S. 由于软件不完善，不建议软件开启一次，处理多次视频，但可以发送多次。并且只要不删 cache，下次开启就不用再次处理相同视频了。会提示检测到。
+    先选择一个视频文件，根据视频的特点选择要不要反色以获得更好的显示效果。然后点击处理视频，会在当前目录下生成一个 cache 文件夹，存放临时文件。然后随便设置一个端口，小于 65535 就行，点击开启监听。esp32 连上后会有提示。收到“hello world”后就可以发送了。
+    P.S. 由于软件不完善，不建议软件开启一次，处理多次视频，但可以发送多次。并且只要不删 cache，下次开启就不用再次处理相同视频了。会提示检测到。
 
   <img src="https://imgforfeoar-1312132618.cos.ap-shanghai.myqcloud.com/markdown/202302062027414.png" style="zoom:80%;" />
 

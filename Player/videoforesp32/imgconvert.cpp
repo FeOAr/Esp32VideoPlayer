@@ -68,9 +68,9 @@ void ImgConvert::gray_save2file(Mat rowImg, int num){
         file->deleteLater();
 }
 
-void ImgConvert::work(QString videoPath)
+void ImgConvert::work(QString videoPath, bool invsColor)
 {
-//    qDebug() << "当前线程对象的地址: " << QThread::currentThread();
+    invertColor = invsColor;
     int fileNum = 0;                // 该变量表示当前文件的编号
     int pVal = 1;
     VideoCapture cap(videoPath.toStdString());
@@ -94,9 +94,4 @@ void ImgConvert::work(QString videoPath)
     }
     cap.release();
     emit isDone(maxFrame);
-}
-
-void ImgConvert::invertBlack(bool val)
-{
-    invertColor = val?true:false;
 }

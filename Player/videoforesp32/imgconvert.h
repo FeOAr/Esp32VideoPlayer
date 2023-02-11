@@ -10,8 +10,7 @@ class ImgConvert : public QObject
 public:
     explicit ImgConvert(QObject *parent = nullptr);
     void gray_save2file(cv::Mat, int);
-    void work(QString);  //自线程，负责图转bit.txt
-    void invertBlack(bool);  //反色
+    void work(QString, bool);  //自线程，负责图转bit.txt
 public:
     int maxFrame;
     bool invertColor;

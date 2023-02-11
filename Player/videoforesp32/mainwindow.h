@@ -8,6 +8,7 @@
 #include <QTcpSocket>
 #include <opencv2/opencv.hpp>
 #include <QQueue>
+#include "imgconvert.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -33,13 +34,15 @@ private slots:
 
     void on_convertBW_stateChanged(int arg1);
 
+    void on_convertVedio_clicked();
+
 private:
     void gray_save2file(cv::Mat, int);
     void bitStringConvert(QString&);  //01 -> ab
     void compressBitString(QString, QString&); //压缩
     QQueue<QString> fileCache;
 signals:
-    void inverseColor(bool);
+    void convPrepareDone(QString, bool);
 
 private:
     Ui::MainWindow *ui;
@@ -48,6 +51,7 @@ private:
     QLabel* m_statusBar;
     QString fileName;
     bool sendFlag;
+    bool invColor;
     int maxFrame;
     int resizeWidth;
 };

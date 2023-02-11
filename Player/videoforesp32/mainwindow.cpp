@@ -21,10 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("ESP32OLED播放器");
     ui->progressBar->setValue(0);
     updateLocalFrameNum(0);
-    QThread* sub = new QThread;
-    ImgConvert* imgConvTaskObj = new ImgConvert;
-    imgConvTaskObj->moveToThread(sub);    // 移动到子线程中工作
-    sub->start();
+    invColor = false;
 
     m_server = new QTcpServer(this);    // 创建 QTcpServer 对象
     // 检测是否有新的客户端连接
@@ -47,44 +44,6 @@ MainWindow::MainWindow(QWidget *parent)
             m_tcp->deleteLater();
         });
     });
-
-    qDebug() << "主线程对象的地址: " << QThread::currentThread();
-
-    connect(imgConvTaskObj, &ImgConvert::isDone, this, [=](int raelFramNum){
-        maxFrame = raelFramNum;
-        ui->progressBar->setValue(100);
-        ui->record->append("处理完毕!");
-
-        sub->quit();
-        sub->wait();
-        sub->deleteLater();
-        imgConvTaskObj->deleteLater();
-        this->updateLocalFrameNum(1);
-    });
-
-    connect(imgConvTaskObj, &ImgConvert::processVal, this, [=](int pVal){
-        ui->progressBar->setValue(pVal);
-    });
-
-    connect(ui->convertVedio, &QPushButton::clicked, imgConvTaskObj, [=](){
-        QDir dir("./bitmapSendCache");
-        if(dir.exists()){
-            dir.removeRecursively();
-        }else{
-            dir.mkpath("./bitmapSendCache");
-        }
-        if(!dir.exists())
-        {
-            dir.mkpath("./bitmapSendCache");
-            ui->record->append("临时缓存文件夹创建成功!");
-        }
-        imgConvTaskObj->work(ui->filePath->text());
-    });
-    connect(imgConvTaskObj, &ImgConvert::frameAndFps, this, &MainWindow::appendVideoInfo);
-    connect(imgConvTaskObj, &ImgConvert::reWidth, this, [=](int rW){
-        resizeWidth = rW;
-    });
-    connect(this, &MainWindow::inverseColor, imgConvTaskObj, &ImgConvert::invertBlack);
 }
 
 MainWindow::~MainWindow()
@@ -105,7 +64,6 @@ void MainWindow::on_selectVideo_clicked()
 
 void MainWindow::on_sendVideo_clicked()  //发送文件
 {
-    qDebug() << "use Frame" << maxFrame;
     ui->progressBar->setValue(0);
     double sendNum = 0;
     double sendRatio = 100 / (double)maxFrame;
@@ -113,7 +71,6 @@ void MainWindow::on_sendVideo_clicked()  //发送文件
         resizeWidth += (8 - resizeWidth%8);
     }
     int bufSize = resizeWidth*64+5;
-    qDebug() << "bufSize" <<bufSize;
     for (int j = 0;j<maxFrame;j++) {
         //一行是一帧
         QString fileName = QString("./bitmapSendCache/BitFram_%1.txt").arg(j,8,10, QLatin1Char('0'));
@@ -220,7 +177,7 @@ void MainWindow::updateLocalFrameNum(bool WR)  //ture 为写 false 为读
             qint64 readNum = file.readLine(str,10);
             if((readNum !=0) && (readNum != -1))
             {
-                for(int i = 0; i < 10; i++){
+                for(int i = 0; i < readNum; i++){
                     if(str[i] >= 48 && str[i] <= 57){
                         read[n] *= 10;
                         read[n] += (str[i]-48);
@@ -231,6 +188,7 @@ void MainWindow::updateLocalFrameNum(bool WR)  //ture 为写 false 为读
         maxFrame = read[0];
         resizeWidth = read[1];
         ui->record->append("读取到"+QString::number(maxFrame,10)+"帧");
+        ui->record->append("读取到宽度"+QString::number(resizeWidth,10));
     }
     file.close();
 }
@@ -242,11 +200,52 @@ void MainWindow::appendVideoInfo(QString FAF)
     ui->record->append("帧率"+FAFlist[1]);
 }
 
+/*------反色-------*/
 void MainWindow::on_convertBW_stateChanged(int arg1)
 {
-    if(arg1 == Qt::Checked){
-        emit inverseColor(true);
-    }else{
-        emit inverseColor(false);
+    invColor = (arg1 == Qt::Checked)?true:false;
+}
+
+void MainWindow::on_convertVedio_clicked()
+{
+//    qDebug() << "主线程对象的地址: " << QThread::currentThread();
+    /*------准备-------*/
+    //其实不用频繁创建和释放，线程没活会处于yield状态不占CPU
+    QThread* sub = new QThread;
+    ImgConvert* imgConvTaskObj = new ImgConvert;
+    imgConvTaskObj->moveToThread(sub);    // 移动到子线程中工作
+    sub->start();
+    /*------转换完成-------*/
+    connect(imgConvTaskObj, &ImgConvert::isDone, this, [=](int raelFramNum){
+        maxFrame = raelFramNum;
+        ui->progressBar->setValue(100);
+        ui->record->append("处理完毕!");
+
+        sub->quit();
+        sub->wait();
+        sub->deleteLater();
+        imgConvTaskObj->deleteLater();
+        this->updateLocalFrameNum(1);
+    });
+    /*------转换进度-------*/
+    connect(imgConvTaskObj, &ImgConvert::processVal, this, [=](int pVal){
+        ui->progressBar->setValue(pVal);
+    });
+    /*------转换Cache文件夹-------*/
+    QDir *dir = new QDir;
+    if(dir->exists("./bitmapSendCache")){
+        QDir del("./bitmapSendCache");
+        del.removeRecursively();
     }
+    if(dir->mkpath("./bitmapSendCache")){
+        ui->record->append("临时缓存文件夹创建成功!");
+    }
+    /*------接收传出信息-------*/
+    connect(imgConvTaskObj, &ImgConvert::frameAndFps, this, &MainWindow::appendVideoInfo);
+    connect(imgConvTaskObj, &ImgConvert::reWidth, this, [=](int rW){
+        resizeWidth = rW;
+    });
+
+    connect(this, &MainWindow::convPrepareDone, imgConvTaskObj, &ImgConvert::work);
+    emit convPrepareDone(ui->filePath->text(), invColor);
 }
